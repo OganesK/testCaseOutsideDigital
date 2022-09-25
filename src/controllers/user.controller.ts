@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/no-duplicate-string */
 import { FastifyReply, FastifyRequest } from 'fastify';
 
 import UserAPI from '../api/user.api';
@@ -55,7 +56,7 @@ const GetUserController = async (req: FastifyRequest<{Headers: { token: string}}
   }
 };
 
-const UpdateUserDataController = (req: FastifyRequest<{Headers: { token: string}, Body: UpdateUserTypes}>, reply: FastifyReply) => {
+const UpdateUserDataController = async (req: FastifyRequest<{Headers: { token: string}, Body: UpdateUserTypes}>, reply: FastifyReply) => {
   if (!req.headers.token) {
     reply.code(500).send('Not authorized');
   }

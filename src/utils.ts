@@ -3,7 +3,7 @@ export const validatePassword = (password: string): validationReturnType => {
     upper: (password.match(/[a-z]/g) || []).length > 1,
     lower: (password.match(/[A-Z]/g) || []).length > 1,
     digit: (password.match(/\d/g) || []).length > 1,
-    lengthCheck: password.length >= 7,
+    lengthCheck: password.length >= 8,
   };
 };
 

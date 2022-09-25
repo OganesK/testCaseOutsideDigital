@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import prisma from '../prisma-client';
 
 import { validatePassword } from '../utils';
-import { createToken } from '../integrations/jwt/index';
+import { createToken, verifyToken } from '../integrations/jwt/index';
 
 class UserAPI {
   public async registerNewUser (email: string, password: string, nickName: string) {
@@ -27,7 +27,9 @@ class UserAPI {
       return 'Password needs to be at least 8-length';
     }
 
-    const hashedPassword = bcrypt.hash(password, 7);
+    const hashedPassword = await bcrypt.hash(password, 7);
+
+    console.log(email, nickName, hashedPassword);
 
     const user = await prisma.user.create({
       data: {
@@ -62,6 +64,76 @@ class UserAPI {
     const token = createToken(user);
 
     return { token, user };
+  }
+
+  public async getUser (token: string) {
+    const userId = verifyToken(token);
+
+    if (!userId) {
+      return 'Not authorized';
+    }
+    return prisma.user.findUnique({
+      where: {
+      // @ts-ignore
+        id: userId.userId,
+      },
+    });
+  }
+
+  public async updateUserData (userId: string, email?: string, password?: string, nickName?: string) {
+    const existingUserByEmail = await prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+    const existingUserByNickname = await prisma.user.findUnique({
+      where: {
+        nickName,
+      },
+    });
+
+    const updatingUser = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (existingUserByEmail || existingUserByNickname) {
+      return 'User with provided email or nickname already exists';
+    }
+
+    const hashedPassword = password ? await bcrypt.hash(password, 7) : null;
+
+    return prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        email: email || updatingUser.email,
+        nickName: nickName || updatingUser.nickName,
+        password: hashedPassword || updatingUser.password,
+      },
+    });
+  }
+
+  public async deleteUser (userId: string) {
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!existingUser) {
+      return 'User with privided id does not exist';
+    }
+
+    await prisma.user.delete({
+      where: {
+        id: userId,
+      },
+    });
+
+    return 'Deleted successfully';
   }
 }
 

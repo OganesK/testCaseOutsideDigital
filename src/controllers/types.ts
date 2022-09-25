@@ -8,3 +8,9 @@ export interface ValidateLoginTypes {
   email: string,
   password: string
 }
+
+export interface UpdateUserTypes {
+  email?: string,
+  nickName?: string,
+  password?: string
+}

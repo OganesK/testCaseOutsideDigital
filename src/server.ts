@@ -1,4 +1,5 @@
 import fastify from 'fastify';
+import UserAPI from './api/user.api';
 
 import { PORT } from './config';
 import { logger } from './logger';
